@@ -8,7 +8,7 @@ Built on the **IDEA Framework** (Identify · Design · Evaluate · Adapt) — a 
 
 ## How to Use
 
-1. Open the [Prompt Launcher](./IDEA_Prompt_Launcher.html) (or your GitHub Pages URL once enabled)
+1. Open the [Prompt Launcher](https://cynthialmcginnis.github.io/idea-prompt-launcher/) (or your GitHub Pages URL once enabled)
 2. Click **Copy Prompt A** and paste into Microsoft Copilot
 3. Answer Copilot's 11 questions about your course
 4. Click **Copy Prompt B** and paste into the same chat window — Copilot generates your lesson plan
