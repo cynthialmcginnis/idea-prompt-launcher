@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDEA Framework — AI Lesson Plan Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:      #003F87;
+    --navy-deep: #002A5C;
+    --navy-mid:  #004EA0;
+    --gold:      #FFB81C;
+    --gold-deep: #D4970F;
+    --gold-light:#FFF3CC;
+    --green:     #1A7A4A;
+    --green-lt:  #E6F5EE;
+    --green-bd:  #B8DEC9;
+    --amber:     #B45309;
+    --amber-lt:  #FEF3E2;
+    --amber-bd:  #F6D19A;
+    --purple:    #5B21B6;
+    --purple-lt: #EDE9FE;
+    --purple-bd: #C4B5FD;
+    --bg:        #F0F4FA;
+    --surface:   #FFFFFF;
+    --text:      #1A1A2E;
+    --muted:     #5A6478;
+    --border:    #D8DFE8;
+    --radius:    12px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy-deep);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 28px,
+        rgba(255,184,28,0.04) 28px,
+        rgba(255,184,28,0.04) 30px
+      );
+    pointer-events: none;
+  }
+
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,184,28,0.15);
+    border: 1px solid rgba(255,184,28,0.35);
+    border-radius: 20px;
+    padding: 5px 14px;
+    margin-bottom: 20px;
+  }
+
+  .header-badge span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  header h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+  }
+
+  header h1 em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+    max-width: 580px;
+  }
+
+  /* ── INSTRUCTION BANNER ── */
+  .banner {
+    background: var(--gold);
+    padding: 14px 32px;
+  }
+
+  .banner-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .banner-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .banner-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--navy-deep);
+    line-height: 1.4;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── STEP LABEL ── */
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .step-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .step-chip.green  { background: var(--green-lt); color: var(--green);  border: 1px solid var(--green-bd); }
+  .step-chip.amber  { background: var(--amber-lt); color: var(--amber);  border: 1px solid var(--amber-bd); }
+  .step-chip.purple { background: var(--purple-lt); color: var(--purple); border: 1px solid var(--purple-bd); }
+
+  .step-connector {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px rgba(0,63,135,0.07);
+    transition: box-shadow 0.2s;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 20px rgba(0,63,135,0.12);
+  }
+
+  /* color accent on left */
+  .card.green  { border-left: 4px solid var(--green); }
+  .card.amber  { border-left: 4px solid var(--amber); }
+  .card.purple { border-left: 4px solid var(--purple); }
+
+  /* ── CARD HEADER ── */
+  .card-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .card-letter {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Source Serif 4', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .green  .card-letter { background: var(--green); }
+  .amber  .card-letter { background: var(--amber); }
+  .purple .card-letter { background: var(--purple); }
+
+  .card-meta { flex: 1; }
+
+  .card-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ── CARD ACTIONS ── */
+  .card-actions {
+    padding: 0 24px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-copy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .green  .btn-copy { background: var(--green);  color: #fff; }
+  .amber  .btn-copy { background: var(--amber);  color: #fff; }
+  .purple .btn-copy { background: var(--purple); color: #fff; }
+
+  .green  .btn-copy:hover { background: #15663D; transform: translateY(-1px); }
+  .amber  .btn-copy:hover { background: #954608; transform: translateY(-1px); }
+  .purple .btn-copy:hover { background: #4C1A9A; transform: translateY(-1px); }
+
+  .btn-copy:active { transform: translateY(0); }
+
+  .btn-copy .copy-icon { font-size: 15px; }
+
+  .btn-copy.copied {
+    opacity: 0.85;
+  }
+
+  .btn-preview {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .btn-preview:hover {
+    background: var(--bg);
+    color: var(--text);
+    border-color: #b0b8c8;
+  }
+
+  .chevron {
+    display: inline-block;
+    transition: transform 0.2s;
+    font-size: 12px;
+  }
+
+  .chevron.open { transform: rotate(180deg); }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-panel {
+    border-top: 1px solid var(--border);
+    background: #F8FAFE;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .preview-panel.open {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .preview-inner {
+    padding: 20px 24px;
+  }
+
+  .preview-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .preview-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2A3040;
+    white-space: pre-wrap;
+    font-family: 'DM Mono', monospace;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* ── THEORY STRIP ── */
+  .theory-strip {
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .theory-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+
+  .theory-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .theory-tag {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 3px 12px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 32px;
+    text-align: center;
+  }
+
+  .footer-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .footer-text {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: #9AA0AF;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+
+  .divider-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ── SCROLL CUSTOM ── */
+  .preview-text::-webkit-scrollbar { width: 6px; }
+  .preview-text::-webkit-scrollbar-track { background: #f0f0f0; }
+  .preview-text::-webkit-scrollbar-thumb { background: #c0c8d8; border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .header-inner { padding: 28px 20px 24px; }
+    header h1 { font-size: 24px; }
+    main { padding: 28px 16px 48px; }
+    .card-header { padding: 16px 16px 12px; }
+    .card-actions { padding: 0 16px 16px; flex-wrap: wrap; }
+    .preview-inner { padding: 16px; }
+    .banner { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">
+      <div class="header-dot"></div>
+      <span>IDEA Framework · AI Lesson Plan Builder</span>
+    </div>
+    <h1>AI-Assisted Lesson Design<br>Prompt <em>Launcher</em></h1>
+    <p>A three-step Copilot workflow grounded in seven adult learning theories. Copy each prompt in order — keep all three in the same chat window.</p>
+  </div>
+</header>
+
+<div class="banner">
+  <div class="banner-inner">
+    <span class="banner-icon">📋</span>
+    <p class="banner-text">Click <strong>Copy Prompt</strong> on each step, then paste into Microsoft Copilot. Complete all three prompts in the same chat window — each builds on your previous answers.</p>
+  </div>
+</div>
+
+<main>
+
+  <div class="theory-strip">
+    <span class="theory-label">Grounded in</span>
+    <div class="theory-tags">
+      <span class="theory-tag">Bloom's Taxonomy</span>
+      <span class="theory-tag">Andragogy</span>
+      <span class="theory-tag">Active Learning</span>
+      <span class="theory-tag">Kolb's Cycle</span>
+      <span class="theory-tag">Constructivism</span>
+      <span class="theory-tag">Fink's Taxonomy</span>
+      <span class="theory-tag">UDL</span>
+    </div>
+  </div>
+
+  <div class="section-divider">
+    <div class="divider-line"></div>
+    <span class="divider-label">Step-by-step prompts</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ── PROMPT A ── -->
+  <div class="step-row">
+    <span class="step-chip green">Step 1 — Identify</span>
+    <div class="step-connector"></div>
+  </div>
+
+  <div class="card green" id="cardA">
+    <div class="card-header">
+      <div class="card-letter">A</div>
+      <div class="card-meta">
+        <div class="card-title">Gather Your Course Context</div>
+        <div class="card-subtitle">Paste this into Copilot first. It will interview you with 11 questions about your course, then summarize your answers for Step B.</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-copy" onclick="copyPrompt('A', this)">
+        <span class="copy-icon">⧉</span>
+        <span class="btn-label">Copy Prompt A</span>
+      </button>
+      <button class="btn-preview" onclick="togglePreview('A', this)">
+        Preview <span class="chevron" id="chevronA">▾</span>
+      </button>
+    </div>
+    <div class="preview-panel" id="previewA">
+      <div class="preview-inner">
+        <div class="preview-label">Full prompt text</div>
+        <div class="preview-text" id="textA"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROMPT B ── -->
+  <div class="step-row">
+    <span class="step-chip amber">Step 2 — Design</span>
+    <div class="step-connector"></div>
+  </div>
+
+  <div class="card amber" id="cardB">
+    <div class="card-header">
+      <div class="card-letter">B</div>
+      <div class="card-meta">
+        <div class="card-title">Generate the Lesson Plan</div>
+        <div class="card-subtitle">After Copilot summarizes your answers in Step A, copy this prompt into the same chat. Copilot will produce a complete, theory-grounded lesson plan.</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-copy" onclick="copyPrompt('B', this)">
+        <span class="copy-icon">⧉</span>
+        <span class="btn-label">Copy Prompt B</span>
+      </button>
+      <button class="btn-preview" onclick="togglePreview('B', this)">
+        Preview <span class="chevron" id="chevronB">▾</span>
+      </button>
+    </div>
+    <div class="preview-panel" id="previewB">
+      <div class="preview-inner">
+        <div class="preview-label">Full prompt text</div>
+        <div class="preview-text" id="textB"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROMPT C ── -->
+  <div class="step-row">
+    <span class="step-chip purple">Step 3 — Evaluate &amp; Adapt</span>
+    <div class="step-connector"></div>
+  </div>
+
+  <div class="card purple" id="cardC">
+    <div class="card-header">
+      <div class="card-letter">C</div>
+      <div class="card-meta">
+        <div class="card-title">Verify and Personalize</div>
+        <div class="card-subtitle">Run this verification checklist against the lesson Copilot generated. It will flag what needs revision and prompt you to adapt with your own expertise.</div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-copy" onclick="copyPrompt('C', this)">
+        <span class="copy-icon">⧉</span>
+        <span class="btn-label">Copy Prompt C</span>
+      </button>
+      <button class="btn-preview" onclick="togglePreview('C', this)">
+        Preview <span class="chevron" id="chevronC">▾</span>
+      </button>
+    </div>
+    <div class="preview-panel" id="previewC">
+      <div class="preview-inner">
+        <div class="preview-label">Full prompt text</div>
+        <div class="preview-text" id="textC"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p class="footer-text">"AI is fluent in patterns. Only you are fluent in purpose."</p>
+    <p class="footer-copy">IDEA Framework · © 2026 C. McGinnis · All rights reserved</p>
+  </div>
+</footer>
+
+<script>
+const PROMPTS = {
+  A: `You are an instructional design assistant helping me build a lesson using the IDEA Framework — a structured, theory-grounded approach to AI-assisted lesson planning.
+
+Before we generate anything, I need to define my teaching context clearly. Ask me each of the following questions one at a time and wait for my response before moving to the next question.
+
+After I've answered all 11 questions, summarize my responses in a structured block using these exact section headers:
+
+COURSE DETAILS:
+LEARNING DESIGN REQUIREMENTS:
+ADDITIONAL CONSTRAINTS:
+
+I will copy that summary into the next step of the IDEA process.
+
+Here are the questions to ask me:
+
+1. What is your lesson topic or title?
+2. What is your discipline or subject area?
+3. What course level are you teaching? (e.g., introductory undergraduate, graduate, professional program)
+4. What do your students already know about this topic? Are there any common misconceptions you want to address?
+5. How large is your class, and what is the delivery modality? (in-person, online synchronous, hybrid, or fully asynchronous)
+6. How long is your class session, and how often does the class meet per week?
+7. Which cognitive levels from Bloom's Taxonomy do you most want to target? Choose at least two: Remember/Understand, Apply, Analyze, Evaluate, or Create.
+8. Do you have a preferred cooperative learning structure, or would you like AI to choose? (Examples: Think-Pair-Share, Jigsaw, Gallery Walk, Numbered Heads Together, Structured Controversy)
+9. What authentic task would demonstrate mastery in your field? Describe the assessment you have in mind.
+10. How will students use this knowledge in their professional lives or careers?
+11. Are there any must-includes, things to avoid, or other constraints I should know about — such as technology limitations, time constraints, or accessibility requirements?
+
+Begin with Question 1.`,
+
+  B: `Using the course context summary from our conversation, design a complete lesson plan grounded in the IDEA Framework and the seven adult learning theories it draws on.
+
+You are an expert instructional designer specializing in adult learning and evidence-based pedagogy. Apply all seven theories in your design:
+
+1. Bloom's Taxonomy (Anderson & Krathwohl, 2001) — measurable outcomes at the cognitive levels I specified
+2. Knowles' Andragogy (Knowles, 1984) — professional relevance, self-direction, and prior experience integration
+3. Active Learning (Bonwell & Eison, 1991) — content/activity rhythm scaled to my session length; use 10-minute content and 10-minute activity blocks for sessions 90 minutes or longer; use 7-minute blocks for shorter sessions
+4. Kolb's Experiential Learning Cycle (Kolb, 1984) — full CE → RO → AC → AE arc across the lesson
+5. Constructivism (Vygotsky, Piaget, Bruner) — scaffolded, collaborative knowledge-building pitched at the Zone of Proximal Development
+6. Fink's Taxonomy of Significant Learning (Fink, 2003) — address at least two dimensions beyond cognition: Application, Integration, Human Dimension, Caring, or Learning How to Learn
+7. Universal Design for Learning — multiple means of engagement, representation, and action/expression
+
+Please produce all of the following:
+
+1) At least 3 measurable learning outcomes using strong Bloom's action verbs at the levels I specified. Each must be observable and assessable in class.
+
+2) A full lesson structured in content/activity intervals scaled to my session length. Label each segment with: Time | Segment Type | Content Summary | Activity (Structure + Step-by-Step Instructions) | Student Product | UDL Option. Format this as a table.
+
+3) Named cooperative learning structures for each activity with step-by-step instructions, grouping strategy, timing, and the expected student product.
+
+4) At least 2 formative assessment checkpoints that reveal how students are thinking — not just whether they can recall information.
+
+5) A summative assessment task aligned to my learning outcomes, with a clear rubric table. Each rubric criterion must have three distinct performance levels with observable behavioral descriptors. Avoid words like "adequate" or "good."
+
+6) Explicit real-world relevance connections for adult learners at each major segment.
+
+7) At least one UDL alternative format or access option per major activity.
+
+8) A materials and preparation checklist for the instructor.
+
+Format the lesson plan with the timing table first, then the rubric table, then the materials checklist. Use clear section headers throughout.`,
+
+  C: `Review the lesson plan you just generated using the IDEA Framework Verification Checklist. For each item below, respond with one of three ratings: ✓ Pass | ⚠ Needs Revision | ✗ Fail — and provide a one-sentence explanation for any item that is not a clear Pass.
+
+CONTENT ACCURACY & ALIGNMENT
+□ Learning outcomes are measurable — clear action verbs, observable and assessable, at least 2 higher-order outcomes present
+□ Activities align with stated outcomes — each outcome is addressed; activity complexity matches the intended Bloom level
+□ Content is accurate — definitions correct, examples appropriate and current, any citations verifiable
+
+INSTRUCTIONAL DESIGN QUALITY
+□ Timeline is realistic — segments total the specified session length including transitions; buffer time considered
+□ Content/activity rhythm is maintained and scaled to session length — approximately 10/10 blocks for longer sessions, 7/7 for shorter
+□ Learning structures are specific and varied — named cooperative structures with step-by-step instructions, not vague descriptions
+□ Instructions are clear — grouping strategy, time limits, expected student products, and instructor actions are all specified
+
+ADULT LEARNING PRINCIPLES
+□ Real-world relevance is explicit at each major segment, not tacked on at the end
+□ Student agency is present — choices, experience integration, or peer teaching opportunities exist
+□ Problem-centered approach — tasks are framed as authentic professional problems, not abstract content delivery
+
+ASSESSMENT QUALITY
+□ Formative assessments reveal student thinking — they go beyond recall or yes/no responses
+□ Summative assessment is authentic — a practitioner in this field would actually do this task
+□ Rubric is clear and usable — criteria are observable; performance descriptors are meaningful and distinct at each level
+
+EQUITY & ACCESSIBILITY
+□ Multiple modalities engaged — visual, auditory, and kinesthetic options are present or offered
+□ Alternative demonstration pathways available for students with different needs or backgrounds
+□ Cultural responsiveness reflected — examples and contribution opportunities are inclusive
+
+PRACTICAL FEASIBILITY
+□ Materials are obtainable and any required technology is available
+□ Room or online setup supports the planned grouping structures
+□ Instructor preparation time is reasonable given realistic workload constraints
+
+After completing the checklist, do two things:
+
+First, identify the top 3 items that need revision and suggest a specific edit for each.
+
+Second, ask me: "What do you want to personalize — examples from your own teaching experience, timing adjustments, difficulty level, or something else?" Then help me make those changes.`
+};
+
+// Populate preview text
+Object.keys(PROMPTS).forEach(key => {
+  document.getElementById('text' + key).textContent = PROMPTS[key];
+});
+
+function copyPrompt(key, btn) {
+  navigator.clipboard.writeText(PROMPTS[key]).then(() => {
+    const label = btn.querySelector('.btn-label');
+    const icon  = btn.querySelector('.copy-icon');
+    label.textContent = 'Copied!';
+    icon.textContent  = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      label.textContent = 'Copy Prompt ' + key;
+      icon.textContent  = '⧉';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = PROMPTS[key];
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const label = btn.querySelector('.btn-label');
+    label.textContent = 'Copied!';
+    setTimeout(() => { label.textContent = 'Copy Prompt ' + key; }, 2000);
+  });
+}
+
+function togglePreview(key, btn) {
+  const panel   = document.getElementById('preview' + key);
+  const chevron = document.getElementById('chevron' + key);
+  const isOpen  = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+  btn.querySelector('.chevron').textContent = isOpen ? '▾' : '▴';
+}
+</script>
+</body>
+</html>
